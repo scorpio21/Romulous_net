@@ -1,156 +1,203 @@
 # ROMulus .NET
 
-A local-first desktop ROM collection manager for retro game consoles — C# / .NET 10 / WPF port of [ROMulous](https://github.com/Sphexi/ROMulous).
+> Puerto de **ROMulus** (Python/PySide6) a **C# / Windows Forms / .NET 8.0**  
+> Gestor de colecciones de ROMs local-first, portable y sin base de datos externa.
 
-Scan, identify, enrich with metadata + cover art, organize, and **sync** your collection to whatever device you actually play on — Anbernic handhelds, Batocera setups, MiSTer FPGAs, Analogue Pocket, RetroPie, muOS, Onion OS.
-
-No server. No cloud account. No external services to keep running. SQLite + files on disk, nothing else.
-
-**Project status:** v0.5.0 (in development — active port from Python/PySide6).  
-**Original Python project:** [Sphexi/ROMulous](https://github.com/Sphexi/ROMulous)  
-**License:** [Apache License 2.0](LICENSE)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](#)
+[![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen)](#)
+[![.NET](https://img.shields.io/badge/.NET-8.0-blueviolet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](../LICENSE)
 
 ---
 
-## Why the .NET port?
+## Tabla de contenidos
 
-| | Python original | .NET port |
-|---|---|---|
-| **Runtime** | CPython 3.12 + PySide6 (~300 MB) | Self-contained native exe (~60 MB) |
-| **Startup** | 2–4 s (interpreter warm-up) | < 0.5 s |
-| **UI** | Qt 6 via PySide6 | WPF (Windows Presentation Foundation) |
-| **Packaging** | PyInstaller --onefile | `dotnet publish --self-contained` |
-| **Type safety** | Type hints + mypy/ruff | C# nullable + Roslyn analyzers |
+- [Características](#características)
+- [Stack técnico](#stack-técnico)
+- [Arquitectura](#arquitectura)
+- [Requisitos](#requisitos)
+- [Inicio rápido](#inicio-rápido)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Tests](#tests)
+- [Hoja de ruta](#hoja-de-ruta)
 
 ---
 
-## Tech Stack
+## Características
 
-| Concern | Choice |
+| Feature | Estado |
 |---|---|
-| **Language** | C# 12 / .NET 10 |
-| **UI** | WPF + CommunityToolkit.Mvvm (MVVM pattern) |
-| **Database** | SQLite via `Microsoft.Data.Sqlite` + Dapper |
-| **HTTP** | `System.Net.Http.HttpClient` (built-in) |
-| **YAML** | YamlDotNet |
-| **Logging** | Serilog (rolling file + console) |
-| **Tests** | xUnit + FluentAssertions + Moq |
-| **Build** | `dotnet publish --self-contained -r win-x64` |
+| Esquema SQLite (14 tablas) con WAL y FK | ✅ Sesión 1 |
+| Modelos de dominio (`record` C#) | ✅ Sesión 1 |
+| Repositorio de configuración key-value | ✅ Sesión 1 |
+| Carga de registro de sistemas (`builtin.yaml`) | ✅ Sesión 2 |
+| Quick Scan: walkthrough recursivo de biblioteca | ✅ Sesión 2 |
+| Parser de nombres No-Intro / GoodTools / TOSEC | ✅ Sesión 2 |
+| Fuzzy key para deduplicación | ✅ Sesión 2 |
+| Tombstone sweep (detección de ROMs desaparecidas) | ✅ Sesión 2 |
+| Formulario principal WinForms (árbol + grid) | ✅ Sesión 2 |
+| Carga de ROMs en el grid por sistema | 🔜 Sesión 8 |
+| Heavy Scan (hashing + match DAT) | 🔜 Sesión 10 |
+| Diálogo de configuración | 🔜 Sesión 11 |
+| Sincronización a destinos externos | 🔜 Sesión 14 |
 
 ---
 
-## Project Structure
+## Stack técnico
+
+| Capa | Tecnología |
+|---|---|
+| **UI** | Windows Forms / .NET 8.0-windows |
+| **Arquitectura** | Layered (App → Core ← Infrastructure) |
+| **DI** | `Microsoft.Extensions.DependencyInjection` 8.x |
+| **Base de datos** | SQLite · `Microsoft.Data.Sqlite` · `Dapper` |
+| **YAML** | `YamlDotNet` 18.x |
+| **Logging** | `Serilog` (consola + archivo rotativo) |
+| **Tests** | xUnit · FluentAssertions · SQLite in-memory |
+
+---
+
+## Arquitectura
 
 ```
-ROMulus.slnx
+ROMulus.sln
 ├── src/
-│   ├── ROMulus.App/              # WPF application (exe)
-│   │   ├── Views/                # XAML views
-│   │   ├── ViewModels/           # MVVM view-models
-│   │   ├── Controls/             # Custom WPF controls
-│   │   └── Resources/            # Themes, artwork, icons
+│   ├── ROMulus.Core            # Dominio puro — sin dependencias externas
+│   │   ├── Models/             # Rom, SystemInfo, DestinationProfile…
+│   │   └── Scanner/            # IRomRepository, FilenameParser, LibraryScanner
 │   │
-│   ├── ROMulus.Core/             # Business logic (class library)
-│   │   ├── Models/               # C# record types (Rom, SystemInfo, DestinationProfile…)
-│   │   ├── Scanner/              # Filesystem walk + L1/L2 identification
-│   │   ├── Hashing/              # SHA-1/CRC32 + header stripping + archives
-│   │   ├── DatParsing/           # No-Intro XML DAT parser
-│   │   ├── Organizing/           # Library reorganization (preview/commit)
-│   │   ├── Exporting/            # Destination profile export engine
-│   │   ├── Syncing/              # 5-mode sync + 4-tier identity match (O(N+M))
-│   │   ├── Importing/            # Staging-folder import (analyse → apply)
-│   │   ├── Scrubbing/            # Reverse-direction DB ↔ disk verifier
-│   │   ├── Metadata/             # 6-source enrichment chain
-│   │   ├── Covers/               # Cover art discovery (local + libretro)
-│   │   └── IO/                   # AtomicWriter (tempfile + File.Replace)
+│   ├── ROMulus.Infrastructure  # Implementaciones concretas
+│   │   ├── Database/           # Schema, ConnectionFactory, Config/RomRepository
+│   │   └── SystemRegistry/     # SystemRegistryLoader (YAML → SystemInfo)
 │   │
-│   └── ROMulus.Infrastructure/   # DB + config (class library)
-│       ├── Database/             # Schema, ConnectionFactory, Repositories
-│       └── SystemRegistry/       # YAML → List<SystemInfo> loader
+│   └── ROMulus.App             # Windows Forms (.NET 8.0-windows)
+│       ├── MainForm.cs         # Lógica del formulario principal
+│       ├── MainForm.Designer.cs# Diseño visual (editable en VS Designer)
+│       └── Program.cs          # DI container + bootstrap
 │
 └── tests/
-    ├── ROMulus.Core.Tests/        # Unit tests for Core
-    └── ROMulus.Infrastructure.Tests/ # Integration tests for DB layer
+    ├── ROMulus.Core.Tests      # ModelSmokeTests, FilenameParserTests
+    └── ROMulus.Infrastructure.Tests  # DatabaseSmokeTests, ScannerIntegrationTests
 ```
+
+### Regla de dependencias
+
+```
+App  ──►  Core  ◄──  Infrastructure
+          (IRomRepository)
+```
+
+`Core` no depende de ninguna capa concreta; `Infrastructure` implementa las interfaces definidas en `Core`.
 
 ---
 
-## Getting Started (from source)
+## Requisitos
 
-**Prerequisites:** .NET 10 SDK, Windows 10/11, Visual Studio 2022 (or VS Code + C# Dev Kit).
+- **Windows 10 / 11** (x64)
+- **.NET 8.0 SDK** → [descargar](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **Visual Studio 2022** v17.8+ (para el diseñador WinForms)  
+  _o_ cualquier editor con soporte .NET (Rider, VS Code + C# Dev Kit)
+
+---
+
+## Inicio rápido
 
 ```powershell
+# Clonar
 git clone https://github.com/scorpio21/Romulous_net.git
 cd Romulous_net
 
-# Build
-dotnet build ROMulus.slnx
+# Restaurar dependencias y compilar
+dotnet build ROMulus.sln
 
-# Run tests
-dotnet test ROMulus.slnx
-
-# Launch the app
+# Ejecutar la aplicación
 dotnet run --project src/ROMulus.App
+
+# Ejecutar los tests
+dotnet test ROMulus.sln
+```
+
+**Abrir en Visual Studio:**  
+`Archivo → Abrir → Solución/Proyecto` → seleccionar `dotnet\ROMulus.sln`  
+El diseñador WinForms está disponible haciendo doble clic en `MainForm.cs`.
+
+---
+
+## Estructura del proyecto
+
+```
+dotnet/
+├── ROMulus.sln                    ← Solución VS 2022 (.sln estándar)
+├── Directory.Build.props          ← Configuración global (C# 12, Nullable, NoWarn)
+├── src/
+│   ├── ROMulus.Core/
+│   │   ├── Models/
+│   │   │   ├── Rom.cs
+│   │   │   ├── SystemInfo.cs
+│   │   │   ├── DestinationProfile.cs
+│   │   │   ├── Catalog.cs          # ScanHistory, DatEntry, RomCollection
+│   │   │   ├── RomData.cs          # RomMetadata, RomCover, RomHash
+│   │   │   └── MatchConfidence.cs
+│   │   └── Scanner/
+│   │       ├── IRomRepository.cs   # Contrato de persistencia
+│   │       ├── NoIntroTokens.cs    # FrozenSet de tokens región/revisión
+│   │       ├── FilenameParser.cs   # parse_filename + generate_fuzzy_key
+│   │       └── LibraryScanner.cs  # Quick Scan + tombstone sweep
+│   ├── ROMulus.Infrastructure/
+│   │   ├── Database/
+│   │   │   ├── Schema.cs           # 14 tablas SQLite (idempotente)
+│   │   │   ├── ConnectionFactory.cs# WAL + FK + busy_timeout
+│   │   │   ├── ConfigRepository.cs # key-value persistente
+│   │   │   └── RomRepository.cs   # upsert ROM + COALESCE DAT safety
+│   │   └── SystemRegistry/
+│   │       └── SystemRegistryLoader.cs  # YAML → IReadOnlyList<SystemInfo>
+│   └── ROMulus.App/
+│       ├── Program.cs
+│       ├── MainForm.cs
+│       ├── MainForm.Designer.cs
+│       └── app.manifest            # DPI PerMonitorV2 + longPathAware
+└── tests/
+    ├── ROMulus.Core.Tests/
+    │   ├── ModelSmokeTests.cs
+    │   └── FilenameParserTests.cs
+    └── ROMulus.Infrastructure.Tests/
+        ├── DatabaseSmokeTests.cs
+        └── ScannerIntegrationTests.cs
 ```
 
 ---
 
-## Building a portable ZIP
+## Tests
 
-```powershell
-dotnet publish src/ROMulus.App/ROMulus.App.csproj `
-    --configuration Release `
-    --self-contained `
-    --runtime win-x64 `
-    -p:PublishSingleFile=true `
-    --output dist/
+```
+dotnet test ROMulus.sln --logger "console;verbosity=minimal"
 ```
 
-Then copy alongside the exe:
-- `profiles/` — destination profiles (YAML)
-- `systems/` — system registry (YAML)
-- `data/dats/` — bundled No-Intro DAT files
-- `data/gamedb/` — bundled GameDB JSON snapshots
-- `data/libretro-metadat/` — bundled libretro metadata DATs
+| Suite | Tests | Cubre |
+|---|---|---|
+| `ModelSmokeTests` | 8 | Records de dominio, MatchConfidence |
+| `DatabaseSmokeTests` | 11 | Schema, ConnectionFactory, ConfigRepository |
+| `FilenameParserTests` | 11 | parse_filename, fuzzy_key, side-file, ZIP |
+| `ScannerIntegrationTests` | 8 | Enroll, tombstone, un-tombstone, scoped scan |
+| **Total** | **38** | **0 fallos** |
 
 ---
 
-## Migration Progress
+## Hoja de ruta
 
-This is a port of the Python codebase. Completed sessions:
-
-- [x] **Session 1** — Scaffolding + DB schema + C# models + Config repository (17 tests passing)
-- [ ] **Session 2** — System Registry + Quick Scan (L1 + L2)
-- [ ] **Session 3** — Hasher + DAT Parser (Heavy Scan, L3)
-- [ ] **Session 4** — Metadata enrichment chain (6 sources)
-- [ ] **Session 5** — Cover art (local + libretro thumbnails)
-- [ ] **Session 6** — Organizer + Import + AtomicIO
-- [ ] **Session 7** — Sync Engine + Export
-- [ ] **Session 8** — WPF MainWindow + MVVM skeleton
-- [ ] **Session 9** — Game Table + Detail Panel
-- [ ] **Session 10** — Background workers + Progress dialogs
-- [ ] **Session 11** — Preview dialogs + Settings
-- [ ] **Session 12** — Portable build + CI
-
-See [migration plan](docs/migration-dotnet-plan.md) for the full roadmap.
+| Sesión | Objetivo |
+|---|---|
+| ~~1~~ | ~~Scaffold, DB schema, modelos, ConfigRepository~~ |
+| ~~2~~ | ~~System Registry YAML, Quick Scan, WinForms shell~~ |
+| 3 | DAT parser (No-Intro XML/ZIP) |
+| 4 | Heavy Scan: hashing MD5/SHA1/CRC32 + match DAT |
+| 5 | ROM detail panel + cover art |
+| 6 | Diálogo de configuración + perfiles de exportación |
+| 7 | Sincronización a destinos (USB, carpeta de red) |
+| 8–14 | Enrichment (IGDB/Screenscraper), UI pulido, packaging |
 
 ---
 
-## Design Rules (inherited from original)
+## Licencia
 
-1. **Local-first.** No server, no Docker, no external dependencies to run.
-2. **Quick scan must be fast.** L1 (fuzzy filename) + L2 (header) run during scan; L3 (hash+DAT) is opt-in Heavy Scan.
-3. **Never modify files without preview.** Every destructive action requires confirm.
-4. **Atomic writes only.** `AtomicWriter` uses `Path.GetTempFileName()` + `File.Replace()`.
-5. **Single library at a time.** Switching `library_path` prompts to wipe prior rows.
-6. **Tombstone, don't delete.** Missing files become `missing=1`; re-scan un-tombstones them.
-7. **One rom = one game.** The identity unit is the ROM file (strict 1:1 model, v0.4.0+).
-
----
-
-## License
-
-Apache License 2.0 — see [LICENSE](LICENSE).
-
-Original Python codebase © Sphexi/ROMulous contributors (Apache 2.0).  
-C# port © 2026 scorpio21.
+Apache License 2.0 — ver [`LICENSE`](../LICENSE)
