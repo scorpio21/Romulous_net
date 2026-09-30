@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# .NET artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.nupkg
+*.snupkg
+
+# Publish output
+dist/
+publish/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+
+# Logs
+logs/
+*.log
+
+# Runtime data (generated at runtime, not part of source)
+data/romulus.db
+data/covers/
+
+# User secrets
+appsettings.*.json
+secrets.json
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Rider
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini

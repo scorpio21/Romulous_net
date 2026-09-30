@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ROMulus.App/ROMulus.App.csproj" />
+    <Project Path="src/ROMulus.Core/ROMulus.Core.csproj" />
+    <Project Path="src/ROMulus.Infrastructure/ROMulus.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ROMulus.Core.Tests/ROMulus.Core.Tests.csproj" />
+    <Project Path="tests/ROMulus.Infrastructure.Tests/ROMulus.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
