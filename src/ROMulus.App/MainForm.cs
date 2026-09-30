@@ -152,6 +152,8 @@ public partial class MainForm : Form
             MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
+    private void MiFileExit_Click(object? sender, EventArgs e) => Close();
+
     private void MiHelpAbout_Click(object? sender, EventArgs e)
     {
         MessageBox.Show(
