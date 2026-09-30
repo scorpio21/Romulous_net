@@ -1,0 +1,46 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROMulus.Core", "src\ROMulus.Core\ROMulus.Core.csproj", "{61D4E2C8-1569-4379-8385-8271E5F74F46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROMulus.Infrastructure", "src\ROMulus.Infrastructure\ROMulus.Infrastructure.csproj", "{CFC1FC7C-904C-4824-8481-E972F3889B09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROMulus.App", "src\ROMulus.App\ROMulus.App.csproj", "{E1FAD7CB-028E-4E43-8D64-5B218213BAFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROMulus.Core.Tests", "tests\ROMulus.Core.Tests\ROMulus.Core.Tests.csproj", "{113724EA-9194-456D-A268-A0E7A132AD40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROMulus.Infrastructure.Tests", "tests\ROMulus.Infrastructure.Tests\ROMulus.Infrastructure.Tests.csproj", "{60FF6950-D301-411A-BA8C-ED56A4233E3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61D4E2C8-1569-4379-8385-8271E5F74F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D4E2C8-1569-4379-8385-8271E5F74F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D4E2C8-1569-4379-8385-8271E5F74F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D4E2C8-1569-4379-8385-8271E5F74F46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFC1FC7C-904C-4824-8481-E972F3889B09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFC1FC7C-904C-4824-8481-E972F3889B09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFC1FC7C-904C-4824-8481-E972F3889B09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFC1FC7C-904C-4824-8481-E972F3889B09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1FAD7CB-028E-4E43-8D64-5B218213BAFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1FAD7CB-028E-4E43-8D64-5B218213BAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1FAD7CB-028E-4E43-8D64-5B218213BAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1FAD7CB-028E-4E43-8D64-5B218213BAFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{113724EA-9194-456D-A268-A0E7A132AD40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{113724EA-9194-456D-A268-A0E7A132AD40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{113724EA-9194-456D-A268-A0E7A132AD40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{113724EA-9194-456D-A268-A0E7A132AD40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60FF6950-D301-411A-BA8C-ED56A4233E3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60FF6950-D301-411A-BA8C-ED56A4233E3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60FF6950-D301-411A-BA8C-ED56A4233E3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60FF6950-D301-411A-BA8C-ED56A4233E3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
